@@ -1,41 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace ETModel
 {
-	public sealed class ActorMessageSender : Entity
+	// 知道对方的instanceId，使用这个类发actor消息
+	public struct ActorMessageSender
 	{
+		// 最近接收或者发送消息的时间
+		public long CreateTime { get; }
 		// actor的地址
-		public IPEndPoint Address;
+		public Action<IActorResponse> Callback { get; }
 
-		public long ActorId;
-		
-		// 还没发送的消息
-		public Queue<ActorTask> WaitingTasks = new Queue<ActorTask>();
-		
-		// 最近发送消息的时间
-		public long LastSendTime;
-
-		public TaskCompletionSource<ActorTask> Tcs;
-
-		public int FailTimes;
-
-		public int MaxFailTimes;
-
-		public int Error;
-
-		public override void Dispose()
+		public ActorMessageSender(Action<IActorResponse> callback)
 		{
-			if (this.IsDisposed)
-			{
-				return;
-			}
-			
-			base.Dispose();
-
-			this.Error = 0;
+			this.CreateTime = TimeHelper.Now();
+			this.Callback = callback;
 		}
 	}
 }

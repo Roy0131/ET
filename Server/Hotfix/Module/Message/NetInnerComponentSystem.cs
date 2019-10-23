@@ -1,5 +1,4 @@
-﻿using System.Net;
-using ETModel;
+﻿using ETModel;
 
 namespace ETHotfix
 {
@@ -8,16 +7,32 @@ namespace ETHotfix
 	{
 		public override void Awake(NetInnerComponent self)
 		{
-			self.Awake();
+			NetInnerComponent.Instance = self;
+			self.Awake(NetworkProtocol.TCP, Packet.PacketSizeLength4);
+			self.MessagePacker = new MongoPacker();
+			self.MessageDispatcher = new InnerMessageDispatcher();
 		}
 	}
 
 	[ObjectSystem]
-	public class NetInnerComponentAwake1System : AwakeSystem<NetInnerComponent, IPEndPoint>
+	public class NetInnerComponentAwake1System : AwakeSystem<NetInnerComponent, string>
 	{
-		public override void Awake(NetInnerComponent self, IPEndPoint a)
+		public override void Awake(NetInnerComponent self, string a)
 		{
-			self.Awake(a);
+			NetInnerComponent.Instance = self;
+			self.Awake(NetworkProtocol.TCP, a, Packet.PacketSizeLength4);
+			self.MessagePacker = new MongoPacker();
+			self.MessageDispatcher = new InnerMessageDispatcher();
+		}
+	}
+	
+	[ObjectSystem]
+	public class NetInnerComponentLoadSystem : LoadSystem<NetInnerComponent>
+	{
+		public override void Load(NetInnerComponent self)
+		{
+			self.MessagePacker = new MongoPacker();
+			self.MessageDispatcher = new InnerMessageDispatcher();
 		}
 	}
 
@@ -25,30 +40,6 @@ namespace ETHotfix
 	public class NetInnerComponentUpdateSystem : UpdateSystem<NetInnerComponent>
 	{
 		public override void Update(NetInnerComponent self)
-		{
-			self.Update();
-		}
-	}
-
-	public static class NetInnerComponentEx
-	{
-		public static void Awake(this NetInnerComponent self)
-		{
-			self.Awake(NetworkProtocol.TCP);
-			self.MessagePacker = new MongoPacker();
-			self.MessageDispatcher = new InnerMessageDispatcher();
-			self.AppType = StartConfigComponent.Instance.StartConfig.AppType;
-		}
-
-		public static void Awake(this NetInnerComponent self, IPEndPoint ipEndPoint)
-		{
-			self.Awake(NetworkProtocol.TCP, ipEndPoint);
-			self.MessagePacker = new MongoPacker();
-			self.MessageDispatcher = new InnerMessageDispatcher();
-			self.AppType = StartConfigComponent.Instance.StartConfig.AppType;
-		}
-
-		public static void Update(this NetInnerComponent self)
 		{
 			self.Update();
 		}
